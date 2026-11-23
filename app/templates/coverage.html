@@ -9,15 +9,22 @@
       {% for lo, hi in row.mapped_parts %}
       <div class="mapped" style="--left:{{ 100 * (lo-row.start_mm)/row.planned_mm }}%;--span:{{ 100 * (hi-lo)/row.planned_mm }}%" title="{{ lo }}–{{ hi }} mm"></div>
       {% endfor %}
+      {% for item in row.resets if item.decision == 'SPLICED' %}
+      <div class="meter" style="--left:{{ 100 * (item.start_mm-row.start_mm)/row.planned_mm }}%;--span:{{ 100 * (item.end_mm-item.start_mm)/row.planned_mm }}%" title="换表接续 {{ item.meters|map(attribute='ticket')|join('、') or '无单号' }}"></div>
+      {% endfor %}
       </div><div class="ticks"><span>{{ row.start_mm }}</span><span>{{ row.end_mm }}</span></div>
+      {% for item in row.resets %}<p class="reset-note">{{ item.left }} → {{ item.right }} · {{ item.label }} · 换表记录 #{{ item.meter_sources|join('、#') or '—' }}{% if item.decision != 'SPLICED' %} · {{ item.resolved_by }}{% endif %}</p>{% endfor %}
     </div>
     {% endfor %}
-    <div class="equation">{{ data.planned_mm }} = {{ data.mapped_mm }} + {{ data.missing_mm }} mm <small>计划 = 已映射 + 缺证</small></div>
+    <div class="equation">{{ data.planned_mm }} = {{ data.mapped_mm }} + {{ data.missing_mm }} mm <small>计划 = 已映射 + 缺证 · 换表接续 {{ data.spliced_mm }} mm（{{ data.spliced_count }} 处）</small></div>
   </section>
   <section class="panel"><h3>掉线缺口</h3>
     {% for item in data.missing_parts %}
     <details open><summary>{{ item.chain }} · {{ item.end_mm - item.start_mm }} mm</summary>
-    <p>{{ item.start_mm }} → {{ item.end_mm }}</p><p>{{ item.reasons|join('、') }} · 行 {{ item.sources|join('、') or '—' }}</p></details>
+    <p>{{ item.start_mm }} → {{ item.end_mm }}</p><p>{{ item.reasons|join('、') }} · 行 {{ item.sources|join('、') or '—' }}</p>
+    {% set meter = data.meter_gaps|selectattr('chain','equalto',item.chain)|selectattr('start_mm','equalto',item.start_mm)|list %}
+    {% for m in meter %}<p>换表依据 <code>{{ m.meters|join('、') }}</code>，无法把两侧基点接上，本段留缺。</p>{% endfor %}
+    </details>
     {% else %}<p>计划轨段已全覆盖。</p>{% endfor %}
     <p>重复覆盖 <b>{{ data.overlap_mm }} mm</b></p>
   </section>

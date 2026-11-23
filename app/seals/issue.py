@@ -14,7 +14,7 @@ def issue(archive, run_id):
 
 def verified(archive, run_id):
     data = packet(retrieve(archive, run_id))
-    with archive.transaction() as db:
+    with archive.transaction(write=False) as db:
         saved = db.execute('SELECT seal FROM issues WHERE run_id=?', (run_id,)).fetchone()
     if saved is None:
         raise TrackError('NOT_ISSUED', 409)

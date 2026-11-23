@@ -8,7 +8,7 @@
 |---|---|---|---|---|
 | M1 轨检报文采信 | 查分段与隔离 | `GET/POST /api/capture` | `app/capture/scan.py` `app/capture/resolve.py` | `tests/test_capture.py` |
 | M2 基点匹配 | 查等级和冲突点 | `GET/POST /api/anchors` | `app/anchors/match.py` | `tests/test_anchors.py` |
-| M3 区间坐标复位 | 按链复核标称坐标 | `GET/POST /api/chainage` | `app/chainage/interpolate.py` `app/chainage/segments.py` | `tests/test_chainage.py` |
+| M3 区间坐标复位 | 按链复核标称坐标 | `GET/POST /api/chainage` | `app/chainage/interpolate.py` `app/chainage/segments.py` `app/chainage/meters.py` | `tests/test_chainage.py` `tests/test_meters.py` |
 | M4 缺陷投影合并 | 查同链缺陷群 | `GET/POST /api/defects` | `app/defects/cluster.py` | `tests/test_defects.py` |
 | M5 轨段覆盖对账 | 定位覆盖缺口和重叠 | `GET/POST /api/coverage` | `app/coverage/balance.py` | `tests/test_coverage.py` |
 | M6 批次留档复跑 | 运行并找回原始快照 | `POST /api/runs` | `app/archive/save.py` `app/archive/storage.py` | `tests/test_archive.py` |
@@ -27,5 +27,7 @@
 | TRAP-14 | 同编号异值 | 后写覆盖 | 同组隔离 | `app/capture/resolve.py` | `tests/test_capture.py::test_conflict_keeps_both_sources` |
 | TRAP-19 | 同基点多等级 | 文件顺序决定结果 | 高等级优先，同等级冲突留缺 | `app/anchors/match.py` | `tests/test_anchors.py::test_best_grade_is_order_independent` |
 | TRAP-23 | 正好落在断链处 | 重复投影或误落 | 时间和测距均左闭右开 | `app/chainage/interpolate.py` | `tests/test_chainage.py::test_cut_belongs_to_next_span` |
+| TRAP-27 | 换表后读数归零 | 当倒车全段切开，或逐段接着算 | 按换表记录 + 两侧基点裁定接续/留缺 | `app/chainage/meters.py` `app/chainage/segments.py` | `tests/test_meters.py` |
+| TRAP-29 | 计划外的换表读数 | 未核实的下降被硬算成里程 | 整段 `METER_UNVERIFIED` 留缺 | `app/chainage/meters.py` `app/coverage/balance.py` | `tests/test_meters.py::test_ticket_readout_mismatch_leaves_gap` |
 
-夜巡样例计划 600000 mm，已映射 400000 mm，掉线缺证 200000 mm。重复巡检 100000 mm 单列。档案事务不会发布半份快照。
+夜巡样例计划 600000 mm，已映射 400000 mm，掉线缺证 200000 mm。重复巡检 100000 mm 单列。样例换表记录 MT-4471 落在掉线断档内，只能作旁证，该段仍记 `SIGNAL_GAP`。换表样例计划 600000 mm，接续 100000 mm，已映射 200000 mm。档案事务不会发布半份快照；写锁冲突整体回滚后可重试，同输入重跑取回同一批次。

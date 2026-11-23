@@ -27,3 +27,17 @@ def test_other_defect_type_not_merged(dirty):
 
 def test_empty_cluster():
     assert consolidate([]) == {'observations':0,'clusters_count':0,'clusters':[],'merged':0}
+
+
+def test_reset_members_keep_meter_evidence(meter):
+    clusters = [row for row in meter['defects']['clusters']
+                if row['chain'] == 'UP-A' and row['kind'] == '擦伤']
+    assert [row['members'] for row in clusters] == [['pre'], ['post']]
+    assert [row['resets'] for row in clusters] == [['pre'], ['post']]
+    assert {tuple(row['meter_tickets']) for row in clusters} == {('MT-4502',)}
+    assert {tuple(row['meter_sources']) for row in clusters} == {(1,)}
+
+
+def test_plain_cluster_has_no_meter_evidence(dirty):
+    cluster = next(row for row in dirty['defects']['clusters'] if row['members'] == ['p4'])
+    assert (cluster['resets'], cluster['meter_tickets'], cluster['meter_sources']) == ([], [], [])

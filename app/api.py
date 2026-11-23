@@ -1,7 +1,7 @@
 from flask import Blueprint, current_app, jsonify
 
 from app.archive.save import recent, replay, retrieve
-from app.inputs import source
+from app.inputs import resolved
 from app.pipeline import inspect
 from app.seals.issue import issue, verified
 
@@ -9,7 +9,8 @@ api = Blueprint('track_api', __name__)
 
 
 def stage(name):
-    return inspect(source(), name)[name]
+    raw, meters = resolved()
+    return inspect(raw, name, meters=meters)[name]
 
 
 @api.route('/api/capture', methods=['GET', 'POST'])
@@ -44,7 +45,8 @@ def history():
 
 @api.post('/api/runs')
 def run():
-    data = replay(current_app.track_archive, source())
+    raw, meters = resolved()
+    data = replay(current_app.track_archive, raw, meters)
     return data, 200 if data['reused'] else 201
 
 

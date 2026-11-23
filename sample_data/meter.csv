@@ -1,0 +1,8 @@
+event_id,run,kind,at,odo_mm,ref,grade
+a0,R7,anchor,2026-11-22T00:00:00Z,0,A0,3
+pre,R7,defect,2026-11-22T00:00:30Z,30000,擦伤,2
+a1,R7,anchor,2026-11-22T00:02:00Z,50000,A1,3
+post,R7,defect,2026-11-22T00:01:30Z,25000,擦伤,2
+b0,R7,anchor,2026-11-22T00:02:10Z,50000,B0,3
+b1,R7,anchor,2026-11-22T00:03:00Z,150000,B1,3
+swapgap,R7,defect,2026-11-22T00:02:30Z,20000,裂纹,2

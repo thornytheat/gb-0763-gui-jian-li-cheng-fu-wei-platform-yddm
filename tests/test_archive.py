@@ -49,3 +49,39 @@ def test_failed_write_rolls_back(archive_app):
     with pytest.raises(sqlite3.IntegrityError):
         replay(archive, sample('dirty'))
     assert recent(archive) == {'runs':[]}
+
+
+def test_meter_tickets_saved_with_run(client):
+    saved = client.post('/api/runs', json={'sample': 'meter'}).json
+    assert saved['meter_count'] == 1
+    assert [item['label'] for item in saved['summary']['resets']] == ['换表接续']
+
+
+def test_different_meters_make_different_run(client):
+    first = client.post('/api/runs', json={'sample': 'meter'}).json
+    second = client.post('/api/runs', json={'sample': 'meter', 'meters': []}).json
+    assert first['run_id'] != second['run_id']
+    assert second['summary']['spliced_count'] == 0
+    assert second['summary']['spliced_mm'] == 0 < first['summary']['spliced_mm']
+    assert second['summary']['resets'] == []
+    assert first['meter_count'] == 1 and second['meter_count'] == 0
+
+
+def test_invalid_meter_body_rejected(client):
+    response = client.post('/api/runs', json={'sample': 'meter', 'meters': [{'run': 'R7'}]})
+    assert (response.status_code, response.json['error']) == (422, 'BAD_METER')
+    assert client.get('/api/runs').json == {'runs': []}
+
+
+def test_retry_after_failed_write(client, archive_app):
+    archive = archive_app.track_archive
+    with archive.transaction() as db:
+        db.execute("CREATE TRIGGER fail_run BEFORE INSERT ON runs BEGIN SELECT RAISE(ABORT, 'fault'); END")
+    with pytest.raises(sqlite3.IntegrityError):
+        replay(archive, sample('meter'))
+    assert recent(archive) == {'runs': []}
+    with archive.transaction() as db:
+        db.execute('DROP TRIGGER fail_run')
+    result = client.post('/api/runs', json={'sample': 'meter'}).json
+    assert client.post('/api/runs', json={'sample': 'meter'}).json == dict(result, reused=True)
+    assert len(recent(archive)['runs']) == 1

@@ -1,5 +1,12 @@
 {% set data=stages.chainage %}
-<div class="work-grid"><section class="panel"><h3>双基点复位 · {{ data.projected_count }} 条</h3><div class="scroll"><table><thead><tr><th>报文</th><th>断链分支</th><th>上下游基点</th><th>复位 mm</th><th>证据行</th></tr></thead><tbody>
-{% for p in data.projected %}<tr><td>{{ p.event_id }}</td><td>{{ p.chain }}</td><td>{{ p.marks|join(' → ') }}</td><td>{{ p.station_mm }}</td><td>{{ p.line }} / {{ p.anchor_lines|join('、') }}</td></tr>{% endfor %}
-</tbody></table></div></section><section class="panel"><h3>无法复位 · {{ data.unmapped_count }} 条</h3>
+<div class="work-grid"><section class="panel"><h3>双基点复位 · {{ data.projected_count }} 条</h3><div class="scroll"><table><thead><tr><th>报文</th><th>断链分支</th><th>上下游基点</th><th>复位 mm</th><th>换表依据</th><th>证据行</th></tr></thead><tbody>
+{% for p in data.projected %}<tr><td>{{ p.event_id }}</td><td>{{ p.chain }}</td><td>{{ p.marks|join(' → ') }}</td><td>{{ p.station_mm }}</td><td>{{ p.meter_tickets|join('、') or '—' }}</td><td>{{ p.line }} / {{ p.anchor_lines|join('、') }}</td></tr>{% endfor %}
+</tbody></table></div></section>
+<section class="panel"><h3>换表对账 · {{ data.resets|length }} 处</h3>
+{% for r in data.resets %}<details open><summary>{{ r.left }} → {{ r.right }} · {{ r.label }}</summary>
+<p>{{ r.from_mm }} → {{ r.to_mm }}{% if r.distance_mm is not none %} · 接续 {{ r.distance_mm }} mm{% endif %}</p>
+<p>{{ (r.reason and r.reason ~ ' · ') or '' }}换表记录 #{{ r.meter_sources|join('、#') or '—' }} · 基点行 {{ r.left_line }}、{{ r.right_line }}</p>
+<p>{% for m in r.meters %}<code>{{ m.ticket or '无单号' }} {{ m.at }} {{ m.before_mm }} → {{ m.after_mm }}</code>{% else %}<span>无换表记录，按倒走处理。</span>{% endfor %}</p></details>
+{% else %}<p>本趟没有换表记录。</p>{% endfor %}</section>
+<section class="panel"><h3>无法复位 · {{ data.unmapped_count }} 条</h3>
 {% for p in data.unmapped %}<details><summary>{{ p.event_id }} · {{ p.label }}</summary><p>{{ p.reason }} · 行 {{ p.sources|join('、') }}</p></details>{% endfor %}</section></div>

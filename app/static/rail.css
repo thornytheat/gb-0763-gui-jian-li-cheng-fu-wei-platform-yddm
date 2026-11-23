@@ -8,3 +8,5 @@
 .legend span+span::before {background:var(--miss)}
 .equation {border-top:1px solid var(--line);padding-top:12px;color:var(--accent);font:16px var(--mono)}
 .equation small {display:block;margin-top:7px}
+.meter {position:absolute;inset:3px auto 3px var(--left);width:var(--span);border-inline:2px dashed var(--focus);pointer-events:none}
+.reset-note {color:var(--soft);font-size:12px;margin:6px 0}

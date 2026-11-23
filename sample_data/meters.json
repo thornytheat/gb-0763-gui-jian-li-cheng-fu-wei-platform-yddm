@@ -1,0 +1,9 @@
+{
+  "dirty": [
+    {"ticket":"MT-4471","run":"R7","at":"2026-11-22T00:04:00Z","before_mm":480000,"after_mm":0}
+  ],
+  "clean": [],
+  "meter": [
+    {"ticket":"MT-4502","run":"R7","at":"2026-11-22T00:01:00Z","before_mm":60000,"after_mm":0}
+  ]
+}

@@ -1,5 +1,9 @@
 <div class="work-grid"><section class="panel"><h3>批次快照</h3>
-{% for run in ledger %}<p><a href="{{ url_for('track_web.screen',section='issue',run=run.run_id,sample=label) }}"><code>{{ run.run_id[:16] }}</code></a> · {{ run.summary.mapped_mm }} mm <small>{{ run.created_at }}</small></p>{% else %}<p>等待首次归档。</p>{% endfor %}
+{% for run in ledger %}<p><a href="{{ url_for('track_web.screen',section='issue',run=run.run_id,sample=label) }}"><code>{{ run.run_id[:16] }}</code></a> · {{ run.summary.mapped_mm }} mm <small>{{ run.created_at }}</small></p>
+{% for r in run.summary.resets|default([]) %}<p class="reset-note">↳ {{ r.left }} → {{ r.right }} · {{ r.label }} · 换表记录 #{{ r.meter_sources|join('、#') or '—' }}{% if r.resolved_by %} · {{ r.resolved_by }}{% endif %}</p>{% else %}<p class="reset-note">↳ 无换表记录</p>{% endfor %}
+{% else %}<p>等待首次归档。</p>{% endfor %}
 </section><section class="panel"><h3>归档报文</h3><form id="save-run" data-sample="{{ label }}">
-<label for="csv">自填 CSV</label><textarea id="csv" rows="7" placeholder="留空使用当前样例"></textarea><button>复算并归档</button>
-</form></section></div>
+<label for="csv">自填 CSV</label><textarea id="csv" rows="6" placeholder="留空使用当前样例"></textarea>
+<label for="meters">换表记录 JSON</label><textarea id="meters" rows="4" placeholder="留空使用样例随附记录">{{ meters_text }}</textarea>
+<button>复算并归档</button>
+</form><p class="reset-note">换表记录与报文一起参与归档键；同输入重跑取回同一批次。</p></section></div>
